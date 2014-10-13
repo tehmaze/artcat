@@ -2,6 +2,18 @@
 
 A cat(1) like utility for text mode art.
 
+## Installation
+
+You can use either `pip` or `easy_install`:
+
+    $ pip install artcat
+
+## Upgrading from a previous release
+
+You can use either `pip` or `easy_install`:
+
+    $ pip install -U artcat
+
 ## Usage
 
 Artcat will inspect your current locale settings to autodetect the target
