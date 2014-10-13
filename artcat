@@ -1,17 +1,52 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
+
+from __future__ import print_function
 
 import locale
 import os
 import sys
 
 
+def list_encodings():
+    from collections import OrderedDict
+    import encodings
+    import glob
+
+    encs = OrderedDict()
+    path = os.path.dirname(sys.modules['encodings'].__file__)
+    size = 0
+    for filename in glob.glob(os.path.join(path, '*.py')):
+        name = os.path.splitext(os.path.basename(filename))[0]
+        if name not in ['aliases', 'encodings', 'undefined', '__init__']:
+            encs[name] = []
+            size = max(size, len(name))
+
+    for alias, name in encodings.aliases.aliases.items():
+        if name in encs:
+            encs[name].append(alias)
+
+    print('Available encodings:')
+    for name, aliases in encs.items():
+        print('{}: {}'.format(
+            name.rjust(size),
+            ','.join(sorted(aliases)),
+        ))
+
+
 def run():
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--source-encoding', default='cp437',
+    codecs = parser.add_argument_group(
+        'encodings',
+        'Use ENCODING "help" to get a list of available encodings on your '
+        'system.'
+    )
+    codecs.add_argument('-s', '--source-encoding', default='cp437',
+        metavar='CODEC',
         help='source encoding (default: cp437)')
-    parser.add_argument('-t', '--target-encoding', default=None,
+    codecs.add_argument('-t', '--target-encoding', default=None,
+        metavar='CODEC',
         help='target encoding (default: autodetect)')
     parser.add_argument('-o', '--output', default='-',
         help='output (default: STDOUT)')
@@ -20,6 +55,10 @@ def run():
 
     if not option.filename:
         option.filename = ['-']
+
+    if 'help' in [option.target_encoding, option.source_encoding]:
+        list_encodings()
+        return 0
 
     if not option.target_encoding:
         lang, option.target_encoding = locale.getdefaultlocale()
