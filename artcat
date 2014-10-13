@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+import locale
+import os
+import sys
+
+
+def run():
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--source-encoding', default='cp437',
+        help='source encoding (default: cp437)')
+    parser.add_argument('-t', '--target-encoding', default=None,
+        help='target encoding (default: autodetect)')
+    parser.add_argument('-o', '--output', default='-',
+        help='output (default: STDOUT)')
+    parser.add_argument('filename', nargs='*')
+    option = parser.parse_args()
+
+    if not option.filename:
+        option.filename = ['-']
+
+    if not option.target_encoding:
+        lang, option.target_encoding = locale.getdefaultlocale()
+    if not option.target_encoding:
+        sys.stderr.write('{}: could not determine target encoding, using UTF-8'
+                         .format(sys.argv[0]))
+        option.target_encoding = 'UTF-8'
+
+    if option.output in [None, '', '-']:
+        output = sys.stdout
+    else:
+        output = open(option.output, 'wb')
+
+    for filename in option.filename:
+        if filename == '-':
+            stream = sys.stdin
+        else:
+            stream = file(filename)
+
+        source = stream.read()
+        target = source.split('\x1aSAUCE')[0].decode(
+            option.source_encoding,
+        ).encode(
+            option.target_encoding,
+        )
+        output.write(target)
+        output.flush()
+
+    if output != sys.stdout:
+        output.close()
+
+
+if __name__ == '__main__':
+    sys.exit(run())
