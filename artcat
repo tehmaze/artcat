@@ -61,6 +61,9 @@ def run():
         return 0
 
     if not option.target_encoding:
+        if sys.platform == 'darwin':
+            locale.setlocale(locale.LC_CTYPE, "UTF-8")
+
         lang, option.target_encoding = locale.getdefaultlocale()
     if not option.target_encoding:
         sys.stderr.write('{}: could not determine target encoding, using UTF-8'
